@@ -865,7 +865,7 @@ function updateRankCard() {
 function canPlay() {
   // Need 10+ purchases to play
   const { cnt } = getUserRankData();
-  if (cnt < 10) return false;
+  if (cnt < 0) return false; // temporarily disabled for testing
   const cd = localStorage.getItem(GAME_CD_KEY);
   if (!cd) return true;
   return new Date() >= new Date(cd);
@@ -873,7 +873,7 @@ function canPlay() {
 
 function getGameLockReason() {
   const { cnt } = getUserRankData();
-  if (cnt < 10) return `🔒 Доступно с 10 покупок · У тебя: ${cnt}`;
+  if (cnt < 0) return `🔒 Доступно с 10 покупок · У тебя: ${cnt}`;
   const cd = getCooldownText();
   if (cd) return `⏳ Следующая игра через: ${cd}`;
   return null;
