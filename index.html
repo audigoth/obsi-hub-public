@@ -182,10 +182,10 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',system-ui,sans-
 .cblock-ico{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--lav),var(--pink));display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;box-shadow:0 0 20px rgba(192,132,252,.35),0 4px 16px rgba(244,114,182,.2);}
 
 /* ── BOTTOM NAV ── */
-.bnav{position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(13,10,26,.96);backdrop-filter:blur(28px);border-top:1px solid rgba(192,132,252,.15);display:flex;justify-content:space-around;padding:8px 0 14px;}
-.nitem{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 16px;border-radius:12px;opacity:.4;transition:all .15s;}
+.bnav{position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(13,10,26,.96);backdrop-filter:blur(28px);border-top:1px solid rgba(192,132,252,.15);display:flex;justify-content:space-evenly;padding:8px 0 14px;}
+.nitem{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 10px;border-radius:12px;opacity:.4;transition:all .15s;min-width:0;}
 .nitem.on{opacity:1;}
-.nico{font-size:20px;}
+.nico{font-size:18px;}
 .nlbl{font-size:8px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
 .nitem.on .nlbl{color:var(--lav);}
 
@@ -323,7 +323,7 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',system-ui,sans-
 .orb-spark.s2{bottom:-4px;left:-3px;font-size:7px;color:var(--peach);animation-delay:1.5s;}
 
 /* ── GAME SECTION ── */
-.game-ov{position:fixed;inset:0;z-index:200;background:rgba(13,10,26,.97);backdrop-filter:blur(20px);display:flex;flex-direction:column;padding:0;overflow:hidden;transform:translateY(100%);transition:transform .35s cubic-bezier(.16,1,.3,1);}
+.game-ov{position:fixed;inset:0;z-index:500;background:rgba(13,10,26,.97);backdrop-filter:blur(20px);display:flex;flex-direction:column;padding:0;overflow:hidden;transform:translateY(100%);transition:transform .35s cubic-bezier(.16,1,.3,1);}
 .game-ov.open{transform:translateY(0);}
 .game-hdr{padding:14px 16px 0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
 .game-title{font-family:'Playfair Display',Georgia,serif;font-size:19px;font-weight:700;background:linear-gradient(90deg,#e879f9,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
@@ -369,7 +369,6 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',system-ui,sans-
 .num-btn.correct{background:rgba(134,239,184,.2);border-color:#86efb8;color:#86efb8;}
 .num-btn.wrong{background:rgba(255,107,157,.1);border-color:#ff6b9d;color:#ff6b9d;}
 </style>
-<script src="/api.js"></script>
 </head>
 <body>
 
@@ -487,14 +486,7 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',system-ui,sans-
 </div>
 <div style="height:16px"></div>
 
-<!-- BOTTOM NAV -->
-<div class="bnav">
-  <div class="nitem on" onclick="navOn(this)"><div class="nico">🏠</div><div class="nlbl">Главная</div></div>
-  <div class="nitem" onclick="navOn(this);scrollCat()"><div class="nico">🛍</div><div class="nlbl">Каталог</div></div>
-  <div class="nitem" onclick="openRef()"><div class="nico">🎁</div><div class="nlbl">Рефералы</div></div>
-  <div class="nitem" onclick="openGame()"><div class="nico">🎮</div><div class="nlbl">Игры</div></div>
-  <div class="nitem" onclick="openContact('Поддержка')"><div class="nico">💬</div><div class="nlbl">Чат</div></div>
-</div>
+
 
 <!-- MODAL -->
 <div class="moverlay" id="modal" onclick="if(event.target.id==='modal')closeModal()">
@@ -527,6 +519,27 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',system-ui,sans-
 <div class="toast" id="toast"></div>
 
 <script>
+// Global function definitions - safe for inline onclick usage
+function scrollCat(){document.getElementById('catalog')?.scrollIntoView({behavior:'smooth'});}
+function openRef(){
+  const ov=document.getElementById('ref-overlay');
+  if(ov)ov.classList.add('open');
+}
+function openContact(t){
+  const tg=window.Telegram?.WebApp;
+  if(tg)tg.openTelegramLink('https://t.me/supobsi');
+  else window.open('https://t.me/supobsi','_blank');
+}
+function closeGame(){document.getElementById('game-ov')?.classList.remove('open');}
+function openGame(){
+  const ov=document.getElementById('game-ov');
+  if(!ov)return;
+  ov.classList.add('open');
+  setTimeout(()=>{
+    try{updateRankCard();showActivePrize();updateCooldownUI();backToGames();}catch(e){}
+  },50);
+}
+
 const CAT_EMO={bf:'😺',webde:'🐱',top:'👑',biz:'💼',mix:'🎁',warm:'🌸',single:'🐾'};
 const TAGCSS=['pt1','pt2','pt3','pt4','pt5'];
 const tc=i=>TAGCSS[i%TAGCSS.length];
@@ -802,7 +815,7 @@ renderAds();renderFilters();renderProducts();applySettings();
 
 // ══ GAME SYSTEM ══════════════════════════════════════════
 
-const RANKS_CFG = [
+var RANKS_CFG = [
   {min:0,   name:"Beginner", emoji:"🌱", discount:0},
   {min:10,  name:"Buyer",    emoji:"🐱", discount:0.5},
   {min:30,  name:"Lodger",   emoji:"⭐", discount:1},
@@ -811,7 +824,7 @@ const RANKS_CFG = [
   {min:100, name:"Legend",   emoji:"🔥", discount:5},
 ];
 
-const PRIZES_CFG = () => JSON.parse(localStorage.getItem('obsi_prizes') || 'null') || [
+function PRIZES_CFG() { return JSON.parse(localStorage.getItem('obsi_prizes') || 'null') || [
   {weight:35, type:"nothing",  value:0,  label:"😿 Не повезло"},
   {weight:25, type:"discount", value:2,  label:"🎉 Скидка 2%"},
   {weight:18, type:"discount", value:5,  label:"🎊 Скидка 5%"},
@@ -819,18 +832,22 @@ const PRIZES_CFG = () => JSON.parse(localStorage.getItem('obsi_prizes') || 'null
   {weight:7,  type:"discount", value:10, label:"💎 Скидка 10%"},
   {weight:3,  type:"free",     value:0,  label:"⚡ Бонус аккаунт"},
   {weight:2,  type:"jackpot",  value:25, label:"👑 ДЖЕКПОТ 25%!"},
-];
+];}
 
-const SLOT_EMOJIS = ["🍋","🍇","🍓","⭐","🔔","💎","🎰","🐱"];
-let _gameSecret = 0;
-let _gamePlaying = false;
-const GAME_CD_KEY = 'obsi_game_cd';
-const GAME_STATS_KEY = 'obsi_game_stats';
-const ACTIVE_PRIZE_KEY = 'obsi_active_prize';
-const PURCHASES_KEY = 'obsi_purchases'; // count from orders
+
+
+
+var SLOT_EMOJIS = ["🍋","🍇","🍓","⭐","🔔","💎","🎰","🐱"];
+var _gameSecret = 0;
+var _gamePlaying = false;
+var GAME_CD_KEY = 'obsi_game_cd';
+var GAME_STATS_KEY = 'obsi_game_stats';
+var ACTIVE_PRIZE_KEY = 'obsi_active_prize';
+var PURCHASES_KEY = 'obsi_purchases'; // count from orders
 
 // ── RANK UTILS ──────────────────────────────────────────
 function getUserRankData() {
+  try {
   const orders = JSON.parse(localStorage.getItem('obsi_orders') || '[]');
   const uid = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
   const myOrders = uid
@@ -845,6 +862,7 @@ function getUserRankData() {
   const pct = next ? Math.min(100, Math.round((cnt / next.min) * 100)) : 100;
 
   return { rank, next, cnt, pct, rankIdx };
+  } catch(e) { return { rank: RANKS_CFG[0], next: RANKS_CFG[1], cnt: 0, pct: 0, rankIdx: 0 }; }
 }
 
 function updateRankCard() {
@@ -865,7 +883,7 @@ function updateRankCard() {
 function canPlay() {
   // Need 10+ purchases to play
   const { cnt } = getUserRankData();
-  if (cnt < 0) return false; // temporarily disabled for testing
+  if (cnt < 10) return false;
   const cd = localStorage.getItem(GAME_CD_KEY);
   if (!cd) return true;
   return new Date() >= new Date(cd);
@@ -873,7 +891,7 @@ function canPlay() {
 
 function getGameLockReason() {
   const { cnt } = getUserRankData();
-  if (cnt < 0) return `🔒 Доступно с 10 покупок · У тебя: ${cnt}`;
+  if (cnt < 10) return `🔒 Доступно с 10 покупок · У тебя: ${cnt}`;
   const cd = getCooldownText();
   if (cd) return `⏳ Следующая игра через: ${cd}`;
   return null;
@@ -897,7 +915,8 @@ function getCooldownText() {
 
 // ── PRIZE ENGINE ────────────────────────────────────────
 function drawPrize() {
-  const prizes = PRIZES_CFG();
+  const prizes = PRIZES_CFG() || [];
+  if (!prizes.length) return {weight:35, type:"nothing", value:0, label:"😿 Не повезло"};
   const total = prizes.reduce((s, p) => s + p.weight, 0);
   let rnd = Math.random() * total;
   for (const p of prizes) {
@@ -908,8 +927,8 @@ function drawPrize() {
 }
 
 function forcePrize() {
-  // Force non-nothing for skill games
-  const prizes = PRIZES_CFG().filter(p => p.type !== 'nothing');
+  const prizes = (PRIZES_CFG() || []).filter(p => p.type !== 'nothing');
+  if (!prizes.length) return {weight:10, type:"discount", value:5, label:"🎉 Скидка 5%"};
   const total = prizes.reduce((s, p) => s + p.weight, 0);
   let rnd = Math.random() * total;
   for (const p of prizes) {
@@ -977,11 +996,22 @@ function spawnConfetti() {
 // ── OPEN/CLOSE GAME ─────────────────────────────────────
 function openGame() {
   const ov = document.getElementById('game-ov');
-  if (ov) ov.classList.add('open');
-  updateRankCard();
-  showActivePrize();
+  if (!ov) { console.error('game-ov not found'); return; }
+  ov.classList.add('open');
+  setTimeout(() => {
+    try {
+      updateRankCard();
+      showActivePrize();
+      updateCooldownUI();
+      backToGames();
+    } catch(e) { console.warn('openGame init error:', e); }
+  }, 50);
+}
+
+function resetGameCooldown() {
+  localStorage.removeItem(GAME_CD_KEY);
   updateCooldownUI();
-  backToGames();
+  toast('✅ Кулдаун сброшен!');
 }
 
 function closeGame() {
@@ -990,38 +1020,48 @@ function closeGame() {
 }
 
 function updateCooldownUI() {
-  const notice = document.getElementById('game-cd-notice');
-  const timeEl = document.getElementById('game-cd-time');
-  const reason = getGameLockReason();
-  if (reason) {
-    if (notice) notice.style.display = 'block';
-    if (timeEl) timeEl.textContent = reason;
-    document.querySelectorAll('.game-card').forEach(c => c.classList.add('disabled'));
-  } else {
-    if (notice) notice.style.display = 'none';
-    document.querySelectorAll('.game-card').forEach(c => c.classList.remove('disabled'));
-  }
+  try {
+    const notice = document.getElementById('game-cd-notice');
+    const timeEl = document.getElementById('game-cd-time');
+    const reason = getGameLockReason();
+    const cards = Array.from(document.querySelectorAll('.game-card') || []);
+    if (reason) {
+      if (notice) notice.style.display = 'block';
+      if (timeEl) timeEl.textContent = reason;
+      cards.forEach(c => c.classList.add('disabled'));
+    } else {
+      if (notice) notice.style.display = 'none';
+      cards.forEach(c => c.classList.remove('disabled'));
+    }
+  } catch(e) { console.warn('updateCooldownUI error:', e); }
 }
 
 function backToGames() {
-  ['game-slots','game-dice','game-guess'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.style.display = 'none';
-  });
-  const sel = document.getElementById('game-selector');
-  if (sel) sel.style.display = 'block';
-  const res = document.getElementById('game-result');
-  if (res) res.style.display = 'none';
-  updateCooldownUI();
-  showActivePrize();
-  updateRankCard();
+  try {
+    ['game-slots','game-dice','game-guess'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+    const sel = document.getElementById('game-selector');
+    if (sel) sel.style.display = 'block';
+    const res = document.getElementById('game-result');
+    if (res) res.style.display = 'none';
+    updateCooldownUI();
+    showActivePrize();
+    updateRankCard();
+  } catch(e) { console.warn('backToGames error:', e); }
 }
 
 function startGame(type) {
-  if (!canPlay()) return;
-  document.getElementById('game-selector').style.display = 'none';
-  document.getElementById('game-result').style.display = 'none';
-  document.getElementById('game-' + type).style.display = 'block';
+  try {
+    if (!canPlay()) return;
+    const sel = document.getElementById('game-selector');
+    const res = document.getElementById('game-result');
+    const game = document.getElementById('game-' + type);
+    if (sel) sel.style.display = 'none';
+    if (res) res.style.display = 'none';
+    if (game) game.style.display = 'block';
+    else { console.error('Game not found: game-' + type); return; }
 
   // Reset dice
   if (type === 'dice') {
@@ -1161,13 +1201,67 @@ const confStyle = document.createElement('style');
 confStyle.textContent = '@keyframes confFall{0%{transform:translateY(0) rotate(0) scale(1);opacity:1}100%{transform:translateY(60vh) rotate(360deg) scale(.5);opacity:0}}';
 document.head.appendChild(confStyle);
 
+
+// ── NAV EVENT LISTENERS (safe - no inline onclick) ──────────
+document.addEventListener('DOMContentLoaded', function() {
+  const bnav = document.getElementById('bnav');
+  if (!bnav) return;
+  bnav.addEventListener('click', function(e) {
+    const item = e.target.closest('.nitem');
+    if (!item) return;
+    const action = item.dataset.nav;
+    // Set active
+    bnav.querySelectorAll('.nitem').forEach(n => n.classList.remove('on'));
+    item.classList.add('on');
+    // Handle action
+    if (action === 'home') {
+      window.scrollTo({top: 0, behavior: 'smooth'});
+    } else if (action === 'catalog') {
+      document.getElementById('catalog')?.scrollIntoView({behavior:'smooth'});
+    } else if (action === 'ref') {
+      const refOv = document.getElementById('ref-overlay');
+      if (refOv) refOv.classList.add('open');
+      else {
+        const tg = window.Telegram?.WebApp;
+        const refLink = `https://obsihub.com?ref=${tg?.initDataUnsafe?.user?.id||''}`;
+        showToast('🎁 Реферальная ссылка скопирована!');
+        navigator.clipboard?.writeText(refLink).catch(()=>{});
+      }
+    } else if (action === 'game') {
+      const ov = document.getElementById('game-ov');
+      if (ov) {
+        ov.classList.add('open');
+        setTimeout(() => {
+          try { updateRankCard(); showActivePrize(); updateCooldownUI(); backToGames(); } catch(e) {}
+        }, 50);
+      }
+    } else if (action === 'contact') {
+      const tg = window.Telegram?.WebApp;
+      if (tg) tg.openTelegramLink('https://t.me/supobsi');
+      else window.open('https://t.me/supobsi', '_blank');
+    }
+  });
+});
+
 </script>
+
+<!-- BOTTOM NAV -->
+<div class="bnav" id="bnav">
+  <div class="nitem on" data-nav="home"><div class="nico">🏠</div><div class="nlbl">Главная</div></div>
+  <div class="nitem" data-nav="catalog"><div class="nico">🛍</div><div class="nlbl">Каталог</div></div>
+  <div class="nitem" data-nav="ref"><div class="nico">🎁</div><div class="nlbl">Рефералы</div></div>
+  <div class="nitem" data-nav="game"><div class="nico">🎮</div><div class="nlbl">Игры</div></div>
+  <div class="nitem" data-nav="contact"><div class="nico">💬</div><div class="nlbl">Чат</div></div>
+</div>
 
 <!-- GAME OVERLAY -->
 <div class="game-ov" id="game-ov">
   <div class="game-hdr">
     <div class="game-title">🎮 Мини-игры</div>
-    <button class="game-close" onclick="closeGame()">×</button>
+    <div style="display:flex;gap:6px;align-items:center">
+      <button onclick="resetGameCooldown()" style="padding:4px 10px;border-radius:20px;background:rgba(134,239,184,.1);border:1px solid rgba(134,239,184,.2);color:#86efb8;font-size:10px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif">↺ Сброс</button>
+      <button class="game-close" onclick="closeGame()">×</button>
+    </div>
   </div>
   <div class="game-body">
 
